@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlParserGen", "XmlParserGen\XmlParserGen.csproj", "{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseXml", "ParseXml\ParseXml.csproj", "{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Debug|x86.ActiveCfg = Debug|x86
+		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Debug|x86.Build.0 = Debug|x86
+		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Release|x86.ActiveCfg = Release|x86
+		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Release|x86.Build.0 = Release|x86
+		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Debug|x86.ActiveCfg = Debug|x86
+		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Debug|x86.Build.0 = Debug|x86
+		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Release|x86.ActiveCfg = Release|x86
+		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = XmlParserGen\XmlParserGen.csproj
+	EndGlobalSection
+EndGlobal
