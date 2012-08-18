@@ -20,17 +20,12 @@ namespace XmlParserGen {
         }
         static CodeNamespace GenerateParser() {
             CodeNamespace ns = new CodeNamespace("XmlParserGen");
-            ns.Imports.Add(new CodeNamespaceImport("System"));
-            ns.Imports.Add(new CodeNamespaceImport("System.IO"));
-            ns.Imports.Add(new CodeNamespaceImport("System.Xml"));
-            ns.Imports.Add(new CodeNamespaceImport("System.Xml.Linq"));
+            ns.AddImports("System", "System.IO", "System.Xml", "System.Xml.Linq");
             GenerateRoot(ns);
             return ns;
         }
         static void GenerateRoot(CodeNamespace ns) {
-            CodeTypeDeclaration rootType = new CodeTypeDeclaration("Root");
-            rootType.IsClass = true;
-            rootType.Attributes = MemberAttributes.Public;
+            CodeTypeDeclaration rootType = CodeDom.CreateClass("Root");
             rootType.AddProperty("Author");
             CodeConstructor constr = new CodeConstructor();
             constr.Attributes = MemberAttributes.Final;
@@ -38,8 +33,7 @@ namespace XmlParserGen {
             rootType.Members.Add(constr);
             ns.Types.Add(rootType);
 
-            CodeTypeDeclaration authorType = new CodeTypeDeclaration("Author");
-            authorType.IsClass = true;
+            CodeTypeDeclaration authorType = CodeDom.CreateClass("Author");
             authorType.AddProperty<string>("Name");
             ns.Types.Add(authorType);
         }

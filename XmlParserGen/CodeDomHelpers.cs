@@ -2,7 +2,7 @@ using System;
 using System.CodeDom;
 
 namespace XmlParserGen {
-    static class CodeDomExtensions {
+    static class CodeTypeDeclarationExtensions {
         public static void AddProperty(this CodeTypeDeclaration type, string propertyType) {
             type.AddProperty(propertyType, propertyType);
         }
@@ -29,6 +29,24 @@ namespace XmlParserGen {
 
             type.Members.Add(field);
             type.Members.Add(property);
+        }
+    }
+
+    static class CodeNamespaceExtensions {
+        public static void AddImports(this CodeNamespace ns, params string[] imports) {
+            foreach(string import in imports)
+                ns.Imports.Add(new CodeNamespaceImport(import));
+        }
+    }
+
+    static class CodeDom {
+        public static CodeTypeDeclaration CreateClass(string name, bool @public = true) {
+			CodeTypeDeclaration newClass = new CodeTypeDeclaration(name) {
+				IsClass = true,
+			};
+            if(@public)
+                newClass.Attributes = MemberAttributes.Public;
+            return newClass;
         }
     }
 }
