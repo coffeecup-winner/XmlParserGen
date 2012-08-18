@@ -20,9 +20,12 @@ namespace ParseXml {
         public Author Author { get { return author; } }
 
         public static Root ReadFromFile(string filename) {
-            using(Stream stream = new FileStream(filename,FileMode.Open)) {
+            Stream stream = new FileStream(filename,FileMode.Open);
+            try {
                 XDocument document = XDocument.Load(stream);
                 return new Root(document.Root);
+            } finally {
+                stream.Dispose();
             }
         }
     }
