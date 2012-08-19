@@ -107,8 +107,14 @@ namespace XmlParserGen {
                 constructor.Attributes |= MemberAttributes.Public;
             return constructor;
         }
+        public static CodePrimitiveExpression Primitive(object obj) {
+            return new CodePrimitiveExpression(obj);
+        }
         public static CodeVariableDeclarationStatement DeclareVariable<T>(CodeExpression expr) {
             return new CodeVariableDeclarationStatement(typeof(T), GetVariableName(typeof(T).Name), expr);
+        }
+        public static CodeAssignStatement AssignField(string name, CodeExpression expression) {
+            return new CodeAssignStatement(FieldRef(name), expression);
         }
         public static CodeVariableReferenceExpression VarRef(string name) {
             return new CodeVariableReferenceExpression(name);

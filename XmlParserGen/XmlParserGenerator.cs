@@ -2,7 +2,6 @@ using Microsoft.CSharp;
 using System;
 using System.CodeDom;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
@@ -34,8 +33,8 @@ namespace XmlParserGen {
             constructor.AddParameter<XElement>("element");
             foreach(Property property in @class.Properties) {
                 type.AddProperty(property.Type.Name, property.Name);
-                var newElement = CodeDom.VarRef("element").Invoke("Element", new CodePrimitiveExpression(property.ElementName));
-                var assignment = new CodeAssignStatement(CodeDom.FieldRef(property.Name),
+                var newElement = CodeDom.VarRef("element").Invoke("Element", CodeDom.Primitive(property.ElementName));
+                var assignment = CodeDom.AssignField(property.Name,
                     property.Type.IsSystemType ? (CodeExpression)newElement.Get("Value") : CodeDom.New(property.Type.Name, newElement));
                 constructor.Statements.Add(assignment);
             }
@@ -48,9 +47,11 @@ namespace XmlParserGen {
             CodeMemberMethod readFromFileMethod = CodeDom.CreateStaticMethod("ReadFromFile", rootType.Name);
             string filenameParameterName = "filename";
             readFromFileMethod.AddParameter<string>(filenameParameterName);
+
             var fileOpenExpression = CodeDom.New<FileStream>(CodeDom.VarRef(filenameParameterName), CodeDom.TypeRef<FileMode>().Get("Open"));
             var stream = CodeDom.DeclareVariable<Stream>(fileOpenExpression);
             readFromFileMethod.Statements.Add(stream);
+
             var tryFinally = new CodeTryCatchFinallyStatement();
             var loadXDocumentExpression = CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(stream));
             var xDocument = CodeDom.DeclareVariable<XDocument>(loadXDocumentExpression);
@@ -59,6 +60,7 @@ namespace XmlParserGen {
             tryFinally.TryStatements.Add(returnNewRootObject);
             var disposeStreamExpression = CodeDom.VarRef(stream).Invoke("Dispose");
             tryFinally.FinallyStatements.Add(disposeStreamExpression);
+
             readFromFileMethod.Statements.Add(tryFinally);
             return readFromFileMethod;
         }
