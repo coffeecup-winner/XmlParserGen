@@ -40,6 +40,8 @@
     <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CodeDomHelpers.cs" />
+    <Compile Include="XmlParserGenerator.cs" />
+    <Compile Include="XmlParserConfig.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
