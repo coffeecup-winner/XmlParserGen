@@ -34,7 +34,7 @@ namespace XmlParserGen {
             foreach(Property property in @class.Properties) {
                 type.AddProperty(property.Type.Name, property.Name);
                 var newElement = CodeDom.VarRef("element").Invoke("Element", CodeDom.Primitive(property.ElementName));
-                var assignment = CodeDom.AssignField(property.Name,
+                var assignment = CodeDom.AssignField(property.ElementName,
                     property.Type.IsSystemType ? (CodeExpression)newElement.Get("Value") : CodeDom.New(property.Type.Name, newElement));
                 constructor.Statements.Add(assignment);
             }
