@@ -30,11 +30,12 @@ namespace XmlParserGen {
                 Class propertyType;
                 var typeAttr = elem.Attribute("type");
                 var listAttr = elem.Attribute("list");
+                bool noListNode = elem.Attribute("no_list_node") != null;
                 bool isList = listAttr != null;
                 Property property;
                 if(isList) {
                     propertyType = LoadClass(elem, listAttr.Value);
-                    property = new ListProperty(propertyName, propertyType, listAttr.Value);
+                    property = new ListProperty(propertyName, propertyType, listAttr.Value, noListNode);
                 } else {
                     propertyType = typeAttr != null ? GetType(typeAttr) : LoadClass(elem);
                     property = new Property(propertyName, propertyType);

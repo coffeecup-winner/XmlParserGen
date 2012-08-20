@@ -43,12 +43,15 @@ namespace XmlParserGen {
 
     public class ListProperty : Property {
         readonly string itemElementName;
+        readonly bool noListNode;
 
-        public ListProperty(string elementName, Class type, string itemElementName)
+        public ListProperty(string elementName, Class type, string itemElementName, bool noListNode)
             : base(elementName, type) {
             this.itemElementName = itemElementName;
+            this.noListNode = noListNode;
         }
         public override string TypeName { get { return "List<" + base.TypeName + ">"; } }
+        public bool NoListNode { get { return noListNode; } }
         public string ItemElementName { get { return itemElementName; } }
     }
 

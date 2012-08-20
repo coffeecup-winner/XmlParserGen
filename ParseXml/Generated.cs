@@ -51,7 +51,7 @@ namespace XmlParserGen {
         
         Root(System.Xml.Linq.XElement element) {
             this.books = new List<Book>();
-            System.Collections.Generic.IEnumerator<System.Xml.Linq.XElement> iterator = element.Element("books").Elements("book").GetEnumerator();
+            System.Collections.Generic.IEnumerator<System.Xml.Linq.XElement> iterator = element.Elements("book").GetEnumerator();
             try {
                 for (
                 ; iterator.MoveNext(); 

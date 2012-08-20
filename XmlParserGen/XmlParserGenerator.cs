@@ -56,7 +56,7 @@ namespace XmlParserGen {
             var createList = CodeDom.AssignField(property.ElementName, CodeDom.New(property.TypeName));
             constructor.Statements.Add(createList);
 			CodeExpression element = CodeDom.VarRef("element");
-            if(!string.IsNullOrEmpty(property.ElementName))
+            if(!property.NoListNode)
                 element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
             var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
             var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
