@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom;
+using System.Collections.Generic;
 
 namespace XmlParserGen {
     static class CodeTypeDeclarationExtensions {
@@ -48,32 +49,16 @@ namespace XmlParserGen {
         }
     }
 
-    static class CodeTypeReferenceExpressionExtensions {
-        public static CodeMethodInvokeExpression Invoke(this CodeTypeReferenceExpression type, string name,
-            params CodeExpression[] parameters) {
-            return new CodeMethodInvokeExpression(type, name, parameters);
-        }
-        public static CodePropertyReferenceExpression Get(this CodeTypeReferenceExpression type, string name) {
-            return new CodePropertyReferenceExpression(type, name);
-        }
-    }
-
-    static class CodeVariableReferenceExpressionExtensions {
-        public static CodeMethodInvokeExpression Invoke(this CodeVariableReferenceExpression variable, string name) {
+    static class CodeExpressionExtensions {
+        public static CodeMethodInvokeExpression Invoke(this CodeExpression variable, string name) {
             return new CodeMethodInvokeExpression(variable, name, new CodeExpression[0]);
         }
-        public static CodeMethodInvokeExpression Invoke(this CodeVariableReferenceExpression variable, string name,
+        public static CodeMethodInvokeExpression Invoke(this CodeExpression variable, string name,
             params CodeExpression[] parameters) {
             return new CodeMethodInvokeExpression(variable, name, parameters);
         }
-        public static CodePropertyReferenceExpression Get(this CodeVariableReferenceExpression variable, string name) {
+        public static CodePropertyReferenceExpression Get(this CodeExpression variable, string name) {
             return new CodePropertyReferenceExpression(variable, name);
-        }
-    }
-
-    static class CodeMethodInvokeExpressionExtensions {
-        public static CodePropertyReferenceExpression Get(this CodeMethodInvokeExpression invocation, string name) {
-            return new CodePropertyReferenceExpression(invocation, name);
         }
     }
 
@@ -111,10 +96,16 @@ namespace XmlParserGen {
             return new CodePrimitiveExpression(obj);
         }
         public static CodeVariableDeclarationStatement DeclareVariable<T>(CodeExpression expr) {
-            return new CodeVariableDeclarationStatement(typeof(T), GetVariableName(typeof(T).Name), expr);
+            return DeclareVariable<T>(expr, GetVariableName(typeof(T).Name));
+        }
+        public static CodeVariableDeclarationStatement DeclareVariable<T>(CodeExpression expr, string name) {
+            return new CodeVariableDeclarationStatement(typeof(T), name, expr);
         }
         public static CodeAssignStatement AssignField(string name, CodeExpression expression) {
             return new CodeAssignStatement(FieldRef(name), expression);
+        }
+        public static CodeMethodInvokeExpression FieldInvoke(string name, string method, params CodeExpression[] parameters) {
+            return CodeDom.FieldRef(name).Invoke(method, parameters);
         }
         public static CodeVariableReferenceExpression VarRef(string name) {
             return new CodeVariableReferenceExpression(name);
@@ -136,6 +127,21 @@ namespace XmlParserGen {
         }
         public static CodeMethodReturnStatement Return(CodeExpression expression) {
             return new CodeMethodReturnStatement(expression);
+        }
+        public static CodeStatement[] Using(CodeVariableDeclarationStatement variable, params CodeStatement[] statements) {
+            var tryFinally = new CodeTryCatchFinallyStatement();
+            tryFinally.TryStatements.AddRange(statements);
+            var disposeExpression = CodeDom.VarRef(variable).Invoke("Dispose");
+            tryFinally.FinallyStatements.Add(disposeExpression);
+            return new CodeStatement[] { variable, tryFinally };
+        }
+        public static CodeStatement[] ForEach<T>(CodeExpression enumerable, Func<CodeExpression, CodeStatement[]> action) {
+            var iterator = CodeDom.DeclareVariable<IEnumerator<T>>(enumerable.Invoke("GetEnumerator"), "iterator");
+            var moveNext = CodeDom.VarRef(iterator).Invoke("MoveNext");
+            var current = CodeDom.VarRef(iterator).Get("Current");
+            var cycle = new CodeIterationStatement(new CodeSnippetStatement(), moveNext, new CodeSnippetStatement(),
+               action(current));
+            return Using(iterator, cycle);
         }
     }
 }

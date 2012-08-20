@@ -21,6 +21,6 @@ Global
 		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = XmlParserGen\XmlParserGen.csproj
+		StartupItem = ParseXml\ParseXml.csproj
 	EndGlobalSection
 EndGlobal

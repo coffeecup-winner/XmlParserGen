@@ -1,6 +1,7 @@
 using Microsoft.CSharp;
 using System;
 using System.CodeDom;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Linq;
@@ -22,7 +23,7 @@ namespace XmlParserGen {
         }
         static CodeNamespace GenerateParser(XmlParserConfig config) {
             CodeNamespace ns = new CodeNamespace("XmlParserGen");
-            ns.AddImports("System", "System.IO", "System.Xml", "System.Xml.Linq");
+            ns.AddImports("System", "System.Collections.Generic", "System.IO", "System.Xml", "System.Xml.Linq");
             foreach(Class @class in config.Classes)
                 GenerateClass(ns, @class);
             return ns;
@@ -32,16 +33,36 @@ namespace XmlParserGen {
             CodeConstructor constructor = CodeDom.CreateConstructor(@public: !@class.IsRootType);
             constructor.AddParameter<XElement>("element");
             foreach(Property property in @class.Properties) {
-                type.AddProperty(property.Type.Name, property.Name);
-                var newElement = CodeDom.VarRef("element").Invoke("Element", CodeDom.Primitive(property.ElementName));
-                var assignment = CodeDom.AssignField(property.ElementName,
-                    property.Type.IsSystemType ? (CodeExpression)newElement.Get("Value") : CodeDom.New(property.Type.Name, newElement));
-                constructor.Statements.Add(assignment);
+                type.AddProperty(property.TypeName, property.Name);
+                AddPropertyInitializer(property, constructor);
             }
             type.Members.Add(constructor);
             if(@class.IsRootType)
                 type.Members.Add(CreateReadFromFileMethod(type));
             ns.Types.Add(type);
+        }
+        static void AddPropertyInitializer(Property property, CodeConstructor constructor) {
+            ListProperty listProperty = property as ListProperty;
+            if(listProperty != null) {
+                AddListInitializer(listProperty, constructor);
+                return;
+            }
+            var newElement = CodeDom.VarRef("element").Invoke("Element", CodeDom.Primitive(property.ElementName));
+            var assignment = CodeDom.AssignField(property.ElementName,
+                property.Type.IsSystemType ? (CodeExpression)newElement.Get("Value") : CodeDom.New(property.TypeName, newElement));
+            constructor.Statements.Add(assignment);
+        }
+        static void AddListInitializer(ListProperty property, CodeConstructor constructor) {
+            var createList = CodeDom.AssignField(property.ElementName, CodeDom.New(property.TypeName));
+            constructor.Statements.Add(createList);
+			CodeExpression element = CodeDom.VarRef("element");
+            if(!string.IsNullOrEmpty(property.ElementName))
+                element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
+            var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
+            var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
+                new CodeExpressionStatement(CodeDom.FieldInvoke(property.ElementName, "Add", CodeDom.New(property.Type.Name, current)))
+            });
+            constructor.Statements.AddRange(foreachStatements);
         }
         static CodeMemberMethod CreateReadFromFileMethod(CodeTypeDeclaration rootType) {
             CodeMemberMethod readFromFileMethod = CodeDom.CreateStaticMethod("ReadFromFile", rootType.Name);
@@ -50,18 +71,13 @@ namespace XmlParserGen {
 
             var fileOpenExpression = CodeDom.New<FileStream>(CodeDom.VarRef(filenameParameterName), CodeDom.TypeRef<FileMode>().Get("Open"));
             var stream = CodeDom.DeclareVariable<Stream>(fileOpenExpression);
-            readFromFileMethod.Statements.Add(stream);
 
-            var tryFinally = new CodeTryCatchFinallyStatement();
-            var loadXDocumentExpression = CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(stream));
-            var xDocument = CodeDom.DeclareVariable<XDocument>(loadXDocumentExpression);
-            tryFinally.TryStatements.Add(xDocument);
+            var xDocument = CodeDom.DeclareVariable<XDocument>(CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(stream)));
             var returnNewRootObject = CodeDom.Return(CodeDom.New(rootType.Name, CodeDom.VarRef(xDocument).Get("Root")));
-            tryFinally.TryStatements.Add(returnNewRootObject);
-            var disposeStreamExpression = CodeDom.VarRef(stream).Invoke("Dispose");
-            tryFinally.FinallyStatements.Add(disposeStreamExpression);
 
-            readFromFileMethod.Statements.Add(tryFinally);
+            var usingStatements = CodeDom.Using(stream, xDocument, returnNewRootObject);
+
+            readFromFileMethod.Statements.AddRange(usingStatements);
             return readFromFileMethod;
         }
     }

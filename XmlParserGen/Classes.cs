@@ -5,7 +5,6 @@ using System.Linq;
 using System.Xml.Linq;
 
 namespace XmlParserGen {
-
     public class Class {
         public static readonly Class String = new Class(typeof(string).FullName, true);
         public static readonly Class Int = new Class(typeof(int).FullName, true);
@@ -31,14 +30,26 @@ namespace XmlParserGen {
         readonly Class type;
         readonly string elementName;
 
-        public Property(string name, Class type) {
-            this.name = name.Capitalize();
+        public Property(string elementName, Class type) {
+            this.name = elementName.Capitalize();
             this.type = type;
-            this.elementName = name;
+            this.elementName = elementName;
         }
         public string Name { get { return name; } }
         public Class Type { get { return type; } }
+        public virtual string TypeName { get { return type.Name; } }
         public string ElementName { get { return elementName; } }
+    }
+
+    public class ListProperty : Property {
+        readonly string itemElementName;
+
+        public ListProperty(string elementName, Class type, string itemElementName)
+            : base(elementName, type) {
+            this.itemElementName = itemElementName;
+        }
+        public override string TypeName { get { return "List<" + base.TypeName + ">"; } }
+        public string ItemElementName { get { return itemElementName; } }
     }
 
     static class StringExtensions {

@@ -18,7 +18,9 @@ namespace XmlParserGen {
             root.IsRootType = true;
         }
         Class LoadClass(XElement element) {
-            string name = element.Name.LocalName;
+            return LoadClass(element, element.Name.LocalName);
+        }
+        Class LoadClass(XElement element, string name) {
             Class @class = Classes.FirstOrDefault(c => c.Name == name);
             if(@class != null)
                 return @class;
@@ -26,9 +28,18 @@ namespace XmlParserGen {
             foreach(XElement elem in element.Elements()) {
                 string propertyName = elem.Name.LocalName;
                 Class propertyType;
-                var type = elem.Attribute("type");
-                propertyType = type != null ? GetType(type) : LoadClass(elem);
-                @class.Properties.Add(new Property(propertyName, propertyType));
+                var typeAttr = elem.Attribute("type");
+                var listAttr = elem.Attribute("list");
+                bool isList = listAttr != null;
+                Property property;
+                if(isList) {
+                    propertyType = LoadClass(elem, listAttr.Value);
+                    property = new ListProperty(propertyName, propertyType, listAttr.Value);
+                } else {
+                    propertyType = typeAttr != null ? GetType(typeAttr) : LoadClass(elem);
+                    property = new Property(propertyName, propertyType);
+                }
+                @class.Properties.Add(property);
             }
             Classes.Add(@class);
             return @class;
