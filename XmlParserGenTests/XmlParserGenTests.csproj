@@ -2,15 +2,15 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>XmlParserGen</RootNamespace>
-    <AssemblyName>XmlParserGen</AssemblyName>
+    <ProjectGuid>{BA48438D-3EDA-45A8-855A-267D048F343E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>XmlParserGenTests</RootNamespace>
+    <AssemblyName>XmlParserGenTests</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -18,31 +18,34 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Xml.Linq" />
+    <Reference Include="nunit.framework, Version=2.5.10.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="CodeDomHelpers.cs" />
-    <Compile Include="XmlParserGenerator.cs" />
-    <Compile Include="XmlParserConfig.cs" />
-    <Compile Include="Classes.cs" />
-    <Compile Include="Exceptions.cs" />
+    <Compile Include="HierarchyTests.cs" />
+    <Compile Include="TestsBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\XmlParserGen\XmlParserGen.csproj">
+      <Project>{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}</Project>
+      <Name>XmlParserGen</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

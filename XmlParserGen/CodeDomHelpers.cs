@@ -107,6 +107,9 @@ namespace XmlParserGen {
         public static CodeMethodInvokeExpression FieldInvoke(string name, string method, params CodeExpression[] parameters) {
             return CodeDom.FieldRef(name).Invoke(method, parameters);
         }
+        public static CodeThisReferenceExpression This {
+            get { return new CodeThisReferenceExpression(); }
+        }
         public static CodeVariableReferenceExpression VarRef(string name) {
             return new CodeVariableReferenceExpression(name);
         }
@@ -118,6 +121,9 @@ namespace XmlParserGen {
         }
         public static CodeTypeReferenceExpression TypeRef<T>() {
             return new CodeTypeReferenceExpression(typeof(T));
+        }
+        public static CodeTypeReferenceExpression TypeRef(CodeTypeDeclaration declaration) {
+            return new CodeTypeReferenceExpression(declaration.Name);
         }
         public static CodeObjectCreateExpression New<T>(params CodeExpression[] parameters) {
             return new CodeObjectCreateExpression(typeof(T), parameters);

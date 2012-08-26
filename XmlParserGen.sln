@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlParserGen", "XmlParserGe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseXml", "ParseXml\ParseXml.csproj", "{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlParserGenTests", "XmlParserGenTests\XmlParserGenTests.csproj", "{BA48438D-3EDA-45A8-855A-267D048F343E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,12 +17,16 @@ Global
 		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Debug|x86.Build.0 = Debug|x86
 		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Release|x86.ActiveCfg = Release|x86
 		{22FB6237-924F-4E95-AFCC-58D4DB2BAFFC}.Release|x86.Build.0 = Release|x86
+		{BA48438D-3EDA-45A8-855A-267D048F343E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BA48438D-3EDA-45A8-855A-267D048F343E}.Debug|x86.Build.0 = Debug|Any CPU
+		{BA48438D-3EDA-45A8-855A-267D048F343E}.Release|x86.ActiveCfg = Release|Any CPU
+		{BA48438D-3EDA-45A8-855A-267D048F343E}.Release|x86.Build.0 = Release|Any CPU
 		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Debug|x86.ActiveCfg = Debug|x86
 		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Debug|x86.Build.0 = Debug|x86
 		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Release|x86.ActiveCfg = Release|x86
 		{F2F8C626-1126-4A2E-B6EF-BA61DBB22819}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = ParseXml\ParseXml.csproj
+		StartupItem = XmlParserGen\XmlParserGen.csproj
 	EndGlobalSection
 EndGlobal

@@ -11,9 +11,16 @@ namespace XmlParserGen {
         public static string Generate(string configFilename) {
             using(Stream stream = new FileStream(configFilename, FileMode.Open)) {
                 XmlParserConfig config = new XmlParserConfig(stream);
-                CodeNamespace ns = GenerateParser(config);
-                return GenerateCode(ns);
+                return GenerateCore(config);
             }
+        }
+        public static string GenerateFromString(string configText) {
+            XmlParserConfig config = new XmlParserConfig(configText);
+            return GenerateCore(config);
+        }
+        static string GenerateCore(XmlParserConfig config) {
+            CodeNamespace ns = GenerateParser(config);
+            return GenerateCode(ns);
         }
         static string GenerateCode(CodeNamespace ns) {
             CSharpCodeProvider provider = new CSharpCodeProvider();
@@ -37,8 +44,13 @@ namespace XmlParserGen {
                 AddPropertyInitializer(property, constructor);
             }
             type.Members.Add(constructor);
-            if(@class.IsRootType)
-                type.Members.Add(CreateReadFromFileMethod(type));
+            if(@class.IsRootType) {
+                type.Members.AddRange(new CodeTypeMember[] {
+                    CreateReadFromStringMethod(type),
+                    CreateReadFromStreamMethod(type),
+                    CreateReadFromFileMethod(type)
+                });
+            }
             ns.Types.Add(type);
         }
         static void AddPropertyInitializer(Property property, CodeConstructor constructor) {
@@ -64,21 +76,44 @@ namespace XmlParserGen {
             });
             constructor.Statements.AddRange(foreachStatements);
         }
+        static CodeMemberMethod CreateReadFromStreamMethod(CodeTypeDeclaration rootType) {
+            CodeMemberMethod readFromStreamMethod = CodeDom.CreateStaticMethod("ReadFromStream", rootType.Name);
+            string streamParameterName = "stream";
+            readFromStreamMethod.AddParameter<Stream>(streamParameterName);
+
+            var xDocument = CodeDom.DeclareVariable<XDocument>(CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(streamParameterName)));
+            var returnNewRootObject = CodeDom.Return(CodeDom.New(rootType.Name, CodeDom.VarRef(xDocument).Get("Root")));
+
+            readFromStreamMethod.Statements.AddRange(new CodeStatement[] { xDocument, returnNewRootObject });
+            return readFromStreamMethod;
+        }
         static CodeMemberMethod CreateReadFromFileMethod(CodeTypeDeclaration rootType) {
             CodeMemberMethod readFromFileMethod = CodeDom.CreateStaticMethod("ReadFromFile", rootType.Name);
             string filenameParameterName = "filename";
             readFromFileMethod.AddParameter<string>(filenameParameterName);
 
             var fileOpenExpression = CodeDom.New<FileStream>(CodeDom.VarRef(filenameParameterName), CodeDom.TypeRef<FileMode>().Get("Open"));
+
             var stream = CodeDom.DeclareVariable<Stream>(fileOpenExpression);
-
-            var xDocument = CodeDom.DeclareVariable<XDocument>(CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(stream)));
-            var returnNewRootObject = CodeDom.Return(CodeDom.New(rootType.Name, CodeDom.VarRef(xDocument).Get("Root")));
-
-            var usingStatements = CodeDom.Using(stream, xDocument, returnNewRootObject);
+			var returnStatement = CodeDom.Return(CodeDom.TypeRef(rootType).Invoke("ReadFromStream", CodeDom.VarRef(stream)));
+            var usingStatements = CodeDom.Using(stream, returnStatement);
 
             readFromFileMethod.Statements.AddRange(usingStatements);
             return readFromFileMethod;
+        }
+        static CodeMemberMethod CreateReadFromStringMethod(CodeTypeDeclaration rootType) {
+            CodeMemberMethod readFromStringMethod = CodeDom.CreateStaticMethod("ReadFromString", rootType.Name);
+            string stringParameterName = "xmlString";
+            readFromStringMethod.AddParameter<string>(stringParameterName);
+
+            var stringReader = CodeDom.DeclareVariable<StringReader>(CodeDom.New<StringReader>(CodeDom.VarRef(stringParameterName)));
+
+            var xDocument = CodeDom.DeclareVariable<XDocument>(CodeDom.TypeRef<XDocument>().Invoke("Load", CodeDom.VarRef(stringReader)));
+            var returnNewRootObject = CodeDom.Return(CodeDom.New(rootType.Name, CodeDom.VarRef(xDocument).Get("Root")));
+            var usingStatements = CodeDom.Using(stringReader, xDocument, returnNewRootObject);
+
+            readFromStringMethod.Statements.AddRange(usingStatements);
+            return readFromStringMethod;
         }
     }
 }

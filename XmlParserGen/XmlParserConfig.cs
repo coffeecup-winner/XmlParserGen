@@ -11,9 +11,19 @@ namespace XmlParserGen {
         public XmlParserConfig(Stream configStream) {
             LoadConfig(configStream);
         }
+        public XmlParserConfig(string configText) {
+            LoadConfig(configText);
+        }
         public List<Class> Classes { get { return classes; } }
         void LoadConfig(Stream configStream) {
             XDocument document = XDocument.Load(configStream);
+            LoadConfigCore(document);
+        }
+        void LoadConfig(string configText) {
+            using(StringReader reader = new StringReader(configText))
+                LoadConfigCore(XDocument.Load(reader));
+        }
+        void LoadConfigCore(XDocument document) {
             Class root = LoadClass(document.Root);
             root.IsRootType = true;
         }
