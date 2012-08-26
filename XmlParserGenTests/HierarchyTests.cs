@@ -75,5 +75,22 @@ namespace XmlParserGen.Tests {
             Assert.That(root.Books[0].Name, Is.EqualTo("Watership down"));
             Assert.That(root.Books[1].Author.Name, Is.EqualTo("Mark Haddon"));
         }
+        [Test]
+        public void SeveralListsTest() {
+            string config = @"
+<root>
+  <books list=""book"" />
+  <authors list=""author"" />
+</root>";
+            string xml = @"
+<root>
+  <books />
+  <authors />
+</root>
+";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.Books.Count, Is.EqualTo(0));
+            Assert.That(root.Authors.Count, Is.EqualTo(0));
+        }
     }
 }

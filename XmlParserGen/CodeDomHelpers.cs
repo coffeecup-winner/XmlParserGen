@@ -63,6 +63,8 @@ namespace XmlParserGen {
     }
 
     static class CodeDom {
+        static AutoIncrementableInt autoIncrementableInt = new AutoIncrementableInt();
+
         public static string GetVariableName(string name) {
             return char.ToLower(name[0]) + name.Substring(1);
         }
@@ -142,12 +144,22 @@ namespace XmlParserGen {
             return new CodeStatement[] { variable, tryFinally };
         }
         public static CodeStatement[] ForEach<T>(CodeExpression enumerable, Func<CodeExpression, CodeStatement[]> action) {
-            var iterator = CodeDom.DeclareVariable<IEnumerator<T>>(enumerable.Invoke("GetEnumerator"), "iterator");
+			var iteratorName = autoIncrementableInt.AppendValueTo("iterator"); //TODO: introduce scopes
+            var iterator = CodeDom.DeclareVariable<IEnumerator<T>>(enumerable.Invoke("GetEnumerator"), iteratorName);
             var moveNext = CodeDom.VarRef(iterator).Invoke("MoveNext");
             var current = CodeDom.VarRef(iterator).Get("Current");
             var cycle = new CodeIterationStatement(new CodeSnippetStatement(), moveNext, new CodeSnippetStatement(),
                action(current));
             return Using(iterator, cycle);
+        }
+    }
+
+    class AutoIncrementableInt {
+        int value = 0;
+
+        public int Value { get { return value++; } }
+        public string AppendValueTo(string str) {
+            return str + Value.ToString();
         }
     }
 }
