@@ -25,6 +25,7 @@ namespace XmlParserGen.Tests {
                 IncludeDebugInformation = false
             };
             compilerParameters.ReferencedAssemblies.Add("System.Core.dll");
+            compilerParameters.ReferencedAssemblies.Add("System.Xml.dll");
             compilerParameters.ReferencedAssemblies.Add("System.Xml.Linq.dll");
             CompilerResults result = provider.CompileAssemblyFromSource(compilerParameters, code);
             if(result.Errors.Count > 0) {
