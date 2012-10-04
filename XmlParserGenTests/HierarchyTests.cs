@@ -116,5 +116,39 @@ namespace XmlParserGen.Tests {
             Assert.That(root.Books[0].Author, Is.EqualTo("Mark Haddon"));
             Assert.That(root.Books[0].Name, Is.EqualTo("The curious incident of the dog in the night-time"));
         }
+        [Test]
+        public void GlobalDefinitionsTest() {
+            string config = @"
+<root>
+  <root.definitions>
+    <name>
+      <str type=""string"" />
+    </name>
+  </root.definitions>
+  <books list=""book"">
+    <name defined=""true"" />
+    <author>
+      <name defined=""true"" />
+    </author>
+  </books>
+</root>
+";
+            string xml = @"
+<root>
+  <books>
+    <book>
+      <name><str>Watership down</str></name>
+      <author>
+        <name><str>Richard Adams</str></name>
+      </author>
+    </book>
+  </books>
+</root>
+";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.Books[0].Name.Str, Is.EqualTo("Watership down"));
+            Assert.That(root.Books[0].Author.Name.Str, Is.EqualTo("Richard Adams"));
+            Assert.That(root.Books[0].Name.GetType(), Is.EqualTo(root.Books[0].Author.Name.GetType()));
+        }
     }
 }

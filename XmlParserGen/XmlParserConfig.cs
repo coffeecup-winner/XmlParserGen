@@ -37,24 +37,12 @@ namespace XmlParserGen {
             @class = new Class(name);
             foreach(XElement elem in element.Elements()) {
                 string propertyName = elem.Name.LocalName;
-                if(propertyName == name + ".attributes") {
+                if(propertyName == name + ".attributes")
                     LoadAttributes(elem, @class);
-                    continue;
-                }
-                Class propertyType;
-                var typeAttr = elem.Attribute("type");
-                var listAttr = elem.Attribute("list");
-                bool noListNode = elem.Attribute("no_list_node") != null;
-                bool isList = listAttr != null;
-                Property property;
-                if(isList) {
-                    propertyType = LoadClass(elem, listAttr.Value);
-                    property = new ListProperty(propertyName, propertyType, listAttr.Value, noListNode);
-                } else {
-                    propertyType = typeAttr != null ? GetType(typeAttr) : LoadClass(elem);
-                    property = new Property(propertyName, propertyType);
-                }
-                @class.Properties.Add(property);
+                else if(propertyName == name + ".definitions")
+                    LoadDefinitions(elem);
+                else
+                    LoadProperty(@class, elem, propertyName);
             }
             Classes.Add(@class);
             return @class;
@@ -65,6 +53,34 @@ namespace XmlParserGen {
                 AttributeProperty property = new AttributeProperty(elem.Name.LocalName, GetType(typeAttr));
                 @class.Properties.Add(property);
             }
+        }
+        void LoadDefinitions(XElement element) {
+            foreach(XElement elem in element.Elements())
+                LoadClass(elem);
+        }
+        void LoadProperty(Class @class, XElement elem, string propertyName) {
+            Class propertyType;
+            var typeAttr = elem.Attribute("type");
+            var listAttr = elem.Attribute("list");
+            bool noListNode = elem.Attribute("no_list_node") != null;
+            bool isDefined = elem.Attribute("defined") != null;
+            bool isList = listAttr != null;
+            Property property;
+            if(isList) {
+                propertyType = isDefined ? FindClass(listAttr.Value) : LoadClass(elem, listAttr.Value);
+                property = new ListProperty(propertyName, propertyType, listAttr.Value, noListNode);
+            } else {
+                if(typeAttr != null)
+                    propertyType = GetType(typeAttr);
+                else
+                    propertyType = isDefined ? FindClass(elem.Name.LocalName) : LoadClass(elem);
+                property = new Property(propertyName, propertyType);
+            }
+            @class.Properties.Add(property);
+        }
+        Class FindClass(string name) {
+            string className = name.Capitalize();
+            return Classes.First(c => c.Name == className);
         }
         static Class GetType(XAttribute type) {
             switch(type.Value) {
