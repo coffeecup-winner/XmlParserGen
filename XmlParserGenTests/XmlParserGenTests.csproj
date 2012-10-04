@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="DataTypeTests.cs" />
     <Compile Include="HierarchyTests.cs" />
     <Compile Include="TestsBase.cs" />
   </ItemGroup>

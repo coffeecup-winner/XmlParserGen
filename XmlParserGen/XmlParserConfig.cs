@@ -37,6 +37,10 @@ namespace XmlParserGen {
             @class = new Class(name);
             foreach(XElement elem in element.Elements()) {
                 string propertyName = elem.Name.LocalName;
+                if(propertyName == name + ".attributes") {
+                    LoadAttributes(elem, @class);
+                    continue;
+                }
                 Class propertyType;
                 var typeAttr = elem.Attribute("type");
                 var listAttr = elem.Attribute("list");
@@ -54,6 +58,13 @@ namespace XmlParserGen {
             }
             Classes.Add(@class);
             return @class;
+        }
+        void LoadAttributes(XElement element, Class @class) {
+            foreach(XElement elem in element.Elements()) {
+                var typeAttr = elem.Attribute("type");
+                AttributeProperty property = new AttributeProperty(elem.Name.LocalName, GetType(typeAttr));
+                @class.Properties.Add(property);
+            }
         }
         static Class GetType(XAttribute type) {
             switch(type.Value) {

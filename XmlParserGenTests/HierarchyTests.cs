@@ -92,5 +92,29 @@ namespace XmlParserGen.Tests {
             Assert.That(root.Books.Count, Is.EqualTo(0));
             Assert.That(root.Authors.Count, Is.EqualTo(0));
         }
+        [Test]
+        public void AttributesTest() {
+            string config = @"
+<root>
+  <books list=""book"">
+    <book.attributes>
+      <author type=""string"" />
+      <name type=""string"" />
+    </book.attributes>
+  </books>
+</root>
+";
+            string xml = @"
+<root>
+  <books>
+    <book author=""Mark Haddon"" name=""The curious incident of the dog in the night-time"" />
+  </books>
+</root>
+";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.Books.Count, Is.EqualTo(1));
+            Assert.That(root.Books[0].Author, Is.EqualTo("Mark Haddon"));
+            Assert.That(root.Books[0].Name, Is.EqualTo("The curious incident of the dog in the night-time"));
+        }
     }
 }

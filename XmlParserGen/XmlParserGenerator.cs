@@ -39,9 +39,10 @@ namespace XmlParserGen {
             CodeTypeDeclaration type = CodeDom.CreateClass(@class.Name);
             CodeConstructor constructor = CodeDom.CreateConstructor(@public: !@class.IsRootType);
             constructor.AddParameter<XElement>("element");
+            PropertyInitializerVisitor visitor = new PropertyInitializerVisitor(constructor);
             foreach(Property property in @class.Properties) {
                 type.AddProperty(property.TypeName, property.Name);
-                AddPropertyInitializer(property, constructor);
+                property.Accept(visitor);
             }
             type.Members.Add(constructor);
             if(@class.IsRootType) {
@@ -52,29 +53,6 @@ namespace XmlParserGen {
                 });
             }
             ns.Types.Add(type);
-        }
-        static void AddPropertyInitializer(Property property, CodeConstructor constructor) {
-            ListProperty listProperty = property as ListProperty;
-            if(listProperty != null) {
-                AddListInitializer(listProperty, constructor);
-                return;
-            }
-            var newElement = CodeDom.VarRef("element").Invoke("Element", CodeDom.Primitive(property.ElementName));
-            var assignment = CodeDom.AssignField(property.ElementName,
-                property.Type.IsSystemType ? (CodeExpression)newElement.Get("Value") : CodeDom.New(property.TypeName, newElement));
-            constructor.Statements.Add(assignment);
-        }
-        static void AddListInitializer(ListProperty property, CodeConstructor constructor) {
-            var createList = CodeDom.AssignField(property.ElementName, CodeDom.New(property.TypeName));
-            constructor.Statements.Add(createList);
-			CodeExpression element = CodeDom.VarRef("element");
-            if(!property.NoListNode)
-                element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
-            var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
-            var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
-                new CodeExpressionStatement(CodeDom.FieldInvoke(property.ElementName, "Add", CodeDom.New(property.Type.Name, current)))
-            });
-            constructor.Statements.AddRange(foreachStatements);
         }
         static CodeMemberMethod CreateReadFromStreamMethod(CodeTypeDeclaration rootType) {
             CodeMemberMethod readFromStreamMethod = CodeDom.CreateStaticMethod("ReadFromStream", rootType.Name);
@@ -114,6 +92,42 @@ namespace XmlParserGen {
 
             readFromStringMethod.Statements.AddRange(usingStatements);
             return readFromStringMethod;
+        }
+    }
+
+    public class PropertyInitializerVisitor : IPropertyVisitor {
+        readonly CodeConstructor constructor;
+
+        public PropertyInitializerVisitor(CodeConstructor constructor) {
+            this.constructor = constructor;
+        }
+        public void Visit(Property property) {
+            AddSimplePropertyInitializer(property, isAttribute: false);
+        }
+        public void Visit(AttributeProperty property) {
+            AddSimplePropertyInitializer(property, isAttribute: true);
+        }
+        public void Visit(ListProperty property) {
+            var createList = CodeDom.AssignField(property.ElementName, CodeDom.New(property.TypeName));
+            this.constructor.Statements.Add(createList);
+            CodeExpression element = CodeDom.VarRef("element");
+            if(!property.NoListNode)
+                element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
+            var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
+            var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
+                new CodeExpressionStatement(CodeDom.FieldInvoke(property.ElementName, "Add", CodeDom.New(property.Type.Name, current)))
+            });
+            this.constructor.Statements.AddRange(foreachStatements);
+        }
+        void AddSimplePropertyInitializer(Property property, bool isAttribute) {
+            var newElement = CodeDom.VarRef("element").Invoke(isAttribute ? "Attribute" : "Element", CodeDom.Primitive(property.ElementName));
+            var assignment = CodeDom.AssignField(property.ElementName,
+                property.Type.IsSystemType ? GetSystemTypeInitializer(property.Type, (CodeExpression)newElement.Get("Value")) : CodeDom.New(property.TypeName, newElement));
+            this.constructor.Statements.Add(assignment);
+        }
+        CodeExpression GetSystemTypeInitializer(Class type, CodeExpression value) {
+            if(type == Class.String) return value;
+            return CodeDom.TypeRef(type.Name).Invoke("Parse", value);
         }
     }
 }

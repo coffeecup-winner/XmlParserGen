@@ -125,7 +125,10 @@ namespace XmlParserGen {
             return new CodeTypeReferenceExpression(typeof(T));
         }
         public static CodeTypeReferenceExpression TypeRef(CodeTypeDeclaration declaration) {
-            return new CodeTypeReferenceExpression(declaration.Name);
+            return TypeRef(declaration.Name);
+        }
+        public static CodeTypeReferenceExpression TypeRef(string name) {
+            return new CodeTypeReferenceExpression(name);
         }
         public static CodeObjectCreateExpression New<T>(params CodeExpression[] parameters) {
             return new CodeObjectCreateExpression(typeof(T), parameters);

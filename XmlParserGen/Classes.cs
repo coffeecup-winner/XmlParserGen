@@ -39,6 +39,19 @@ namespace XmlParserGen {
         public Class Type { get { return type; } }
         public virtual string TypeName { get { return type.Name; } }
         public string ElementName { get { return elementName; } }
+        public virtual void Accept(IPropertyVisitor visitor) {
+            visitor.Visit(this);
+        }
+    }
+
+    public class AttributeProperty : Property {
+        public AttributeProperty(string attributeName, Class type)
+            : base(attributeName, type) {
+        }
+        public string AttributeName { get { return ElementName; } }
+        public override void Accept(IPropertyVisitor visitor) {
+            visitor.Visit(this);
+        }
     }
 
     public class ListProperty : Property {
@@ -53,11 +66,20 @@ namespace XmlParserGen {
         public override string TypeName { get { return "List<" + base.TypeName + ">"; } }
         public bool NoListNode { get { return noListNode; } }
         public string ItemElementName { get { return itemElementName; } }
+        public override void Accept(IPropertyVisitor visitor) {
+            visitor.Visit(this);
+        }
     }
 
     static class StringExtensions {
         public static string Capitalize(this string text) {
             return char.ToUpper(text[0]) + text.Substring(1);
         }
+    }
+
+    public interface IPropertyVisitor {
+        void Visit(Property property);
+        void Visit(AttributeProperty property);
+        void Visit(ListProperty property);
     }
 }
