@@ -6,22 +6,25 @@ using System.Xml.Linq;
 
 namespace XmlParserGen {
     public class Class {
-        public static readonly Class String = new Class(typeof(string).FullName, true);
-        public static readonly Class Int = new Class(typeof(int).FullName, true);
-        public static readonly Class Double = new Class(typeof(double).FullName, true);
-        public static readonly Class Bool = new Class(typeof(bool).FullName, true);
+        public static readonly Class String = new Class(typeof(string).Name, typeof(string).Namespace, true);
+        public static readonly Class Int = new Class(typeof(int).Name, typeof(int).Namespace, true);
+        public static readonly Class Double = new Class(typeof(double).Name, typeof(double).Namespace, true);
+        public static readonly Class Bool = new Class(typeof(bool).Name, typeof(bool).Namespace, true);
 
         readonly bool isSystemType;
         readonly string name;
+        readonly string @namespace;
         readonly List<Property> properties = new List<Property>();
 
-        public Class(string name, bool isSystemType = false) {
+        public Class(string name, string @namespace, bool isSystemType = false) {
             this.name = name;
+            this.@namespace = @namespace;
             this.isSystemType = isSystemType;
         }
         public bool IsSystemType { get { return isSystemType; } }
         public bool IsRootType { get; set; }
         public string Name { get { return name; } }
+        public string Namespace { get { return @namespace; } }
         public List<Property> Properties { get { return properties; } }
     }
     

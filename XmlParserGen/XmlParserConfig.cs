@@ -6,6 +6,8 @@ using System.Xml.Linq;
 
 namespace XmlParserGen {
     public class XmlParserConfig {
+        const string DefaultNamespace = "XmlParserGen";
+
         Dictionary<string, Class> classes = new Dictionary<string, Class>();
 
         public XmlParserConfig(Stream configStream) {
@@ -15,6 +17,7 @@ namespace XmlParserGen {
             LoadConfig(configText);
         }
         public List<Class> Classes { get { return classes.Values.ToList(); } }
+        public string Namespace { get; private set; }
         void LoadConfig(Stream configStream) {
             XDocument document = XDocument.Load(configStream);
             LoadConfigCore(document);
@@ -25,6 +28,7 @@ namespace XmlParserGen {
         }
         void LoadConfigCore(XDocument document) {
             Class root = LoadClass(document.Root);
+            Namespace = root.Namespace; //TODO support different namespaces
             root.IsRootType = true;
         }
         Class LoadClass(XElement element) {
@@ -34,7 +38,7 @@ namespace XmlParserGen {
             Class @class;
             if(this.classes.TryGetValue(name, out @class))
                 return @class;
-            @class = new Class(AttributeValueOrDefault(element, "typename") ?? name.Capitalize());
+            @class = new Class(AttributeValueOrDefault(element, "typename") ?? name.Capitalize(), AttributeValueOrDefault(element, "namespace") ?? DefaultNamespace);
             foreach(XElement elem in element.Elements()) {
                 string propertyName = elem.Name.LocalName;
                 if(propertyName == name + ".attributes")

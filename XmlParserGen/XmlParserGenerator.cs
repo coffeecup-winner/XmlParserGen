@@ -29,7 +29,7 @@ namespace XmlParserGen {
             return writer.ToString();
         }
         static CodeNamespace GenerateParser(XmlParserConfig config) {
-            CodeNamespace ns = new CodeNamespace("XmlParserGen");
+            CodeNamespace ns = new CodeNamespace(config.Namespace);
             ns.AddImports("System", "System.Collections.Generic", "System.IO", "System.Xml", "System.Xml.Linq");
             foreach(Class @class in config.Classes)
                 GenerateClass(ns, @class);
