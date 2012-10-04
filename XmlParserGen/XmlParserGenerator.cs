@@ -73,7 +73,7 @@ namespace XmlParserGen {
             var fileOpenExpression = CodeDom.New<FileStream>(CodeDom.VarRef(filenameParameterName), CodeDom.TypeRef<FileMode>().Get("Open"));
 
             var stream = CodeDom.DeclareVariable<Stream>(fileOpenExpression);
-			var returnStatement = CodeDom.Return(CodeDom.TypeRef(rootType).Invoke("ReadFromStream", CodeDom.VarRef(stream)));
+            var returnStatement = CodeDom.Return(CodeDom.TypeRef(rootType).Invoke("ReadFromStream", CodeDom.VarRef(stream)));
             var usingStatements = CodeDom.Using(stream, returnStatement);
 
             readFromFileMethod.Statements.AddRange(usingStatements);
@@ -108,20 +108,20 @@ namespace XmlParserGen {
             AddSimplePropertyInitializer(property, isAttribute: true);
         }
         public void Visit(ListProperty property) {
-            var createList = CodeDom.AssignField(property.ElementName, CodeDom.New(property.TypeName));
+            var createList = CodeDom.AssignField(CodeDom.GetFieldName(property.Name), CodeDom.New(property.TypeName));
             this.constructor.Statements.Add(createList);
             CodeExpression element = CodeDom.VarRef("element");
             if(!property.NoListNode)
                 element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
             var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
             var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
-                new CodeExpressionStatement(CodeDom.FieldInvoke(property.ElementName, "Add", CodeDom.New(property.Type.Name, current)))
+                new CodeExpressionStatement(CodeDom.FieldInvoke(CodeDom.GetFieldName(property.Name), "Add", CodeDom.New(property.Type.Name, current)))
             });
             this.constructor.Statements.AddRange(foreachStatements);
         }
         void AddSimplePropertyInitializer(Property property, bool isAttribute) {
             var newElement = CodeDom.VarRef("element").Invoke(isAttribute ? "Attribute" : "Element", CodeDom.Primitive(property.ElementName));
-            var assignment = CodeDom.AssignField(property.ElementName,
+            var assignment = CodeDom.AssignField(CodeDom.GetFieldName(property.Name),
                 property.Type.IsSystemType ? GetSystemTypeInitializer(property.Type, (CodeExpression)newElement.Get("Value")) : CodeDom.New(property.TypeName, newElement));
             this.constructor.Statements.Add(assignment);
         }

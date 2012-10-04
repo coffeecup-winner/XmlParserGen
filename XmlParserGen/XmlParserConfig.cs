@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace XmlParserGen {
     public class XmlParserConfig {
-        List<Class> classes = new List<Class>();
+        Dictionary<string, Class> classes = new Dictionary<string, Class>();
 
         public XmlParserConfig(Stream configStream) {
             LoadConfig(configStream);
@@ -14,7 +14,7 @@ namespace XmlParserGen {
         public XmlParserConfig(string configText) {
             LoadConfig(configText);
         }
-        public List<Class> Classes { get { return classes; } }
+        public List<Class> Classes { get { return classes.Values.ToList(); } }
         void LoadConfig(Stream configStream) {
             XDocument document = XDocument.Load(configStream);
             LoadConfigCore(document);
@@ -31,10 +31,10 @@ namespace XmlParserGen {
             return LoadClass(element, element.Name.LocalName);
         }
         Class LoadClass(XElement element, string name) {
-            Class @class = Classes.FirstOrDefault(c => c.Name == name);
-            if(@class != null)
+            Class @class;
+            if(this.classes.TryGetValue(name, out @class))
                 return @class;
-            @class = new Class(name);
+            @class = new Class(AttributeValueOrDefault(element, "typename") ?? name.Capitalize());
             foreach(XElement elem in element.Elements()) {
                 string propertyName = elem.Name.LocalName;
                 if(propertyName == name + ".attributes")
@@ -44,13 +44,14 @@ namespace XmlParserGen {
                 else
                     LoadProperty(@class, elem, propertyName);
             }
-            Classes.Add(@class);
+            this.classes.Add(name, @class);
             return @class;
         }
         void LoadAttributes(XElement element, Class @class) {
             foreach(XElement elem in element.Elements()) {
                 var typeAttr = elem.Attribute("type");
-                AttributeProperty property = new AttributeProperty(elem.Name.LocalName, GetType(typeAttr));
+                string elemName = elem.Name.LocalName;
+                AttributeProperty property = new AttributeProperty(AttributeValueOrDefault(elem, "name"), elemName, GetType(typeAttr));
                 @class.Properties.Add(property);
             }
         }
@@ -67,20 +68,16 @@ namespace XmlParserGen {
             bool isList = listAttr != null;
             Property property;
             if(isList) {
-                propertyType = isDefined ? FindClass(listAttr.Value) : LoadClass(elem, listAttr.Value);
-                property = new ListProperty(propertyName, propertyType, listAttr.Value, noListNode);
+                propertyType = isDefined ? this.classes[listAttr.Value] : LoadClass(elem, listAttr.Value);
+                property = new ListProperty(AttributeValueOrDefault(elem, "name"), propertyName, propertyType, listAttr.Value, noListNode);
             } else {
                 if(typeAttr != null)
                     propertyType = GetType(typeAttr);
                 else
-                    propertyType = isDefined ? FindClass(elem.Name.LocalName) : LoadClass(elem);
-                property = new Property(propertyName, propertyType);
+                    propertyType = isDefined ? this.classes[elem.Name.LocalName] : LoadClass(elem);
+                property = new Property(AttributeValueOrDefault(elem, "name"), propertyName, propertyType);
             }
             @class.Properties.Add(property);
-        }
-        Class FindClass(string name) {
-            string className = name.Capitalize();
-            return Classes.First(c => c.Name == className);
         }
         static Class GetType(XAttribute type) {
             switch(type.Value) {
@@ -90,6 +87,11 @@ namespace XmlParserGen {
                 case "bool": return Class.Bool;
                 default: throw new XmlParserConfigIllegalAttributeException(type.Name.LocalName, type.Value);
             }
+        }
+
+        static string AttributeValueOrDefault(XElement element, string name) {
+            var attr = element.Attribute(name);
+            return attr != null ? attr.Value : null;
         }
     }
 }

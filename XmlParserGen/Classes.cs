@@ -16,7 +16,7 @@ namespace XmlParserGen {
         readonly List<Property> properties = new List<Property>();
 
         public Class(string name, bool isSystemType = false) {
-            this.name = name.Capitalize();
+            this.name = name;
             this.isSystemType = isSystemType;
         }
         public bool IsSystemType { get { return isSystemType; } }
@@ -30,8 +30,8 @@ namespace XmlParserGen {
         readonly Class type;
         readonly string elementName;
 
-        public Property(string elementName, Class type) {
-            this.name = elementName.Capitalize();
+        public Property(string name, string elementName, Class type) {
+            this.name = name ?? elementName.Capitalize();
             this.type = type;
             this.elementName = elementName;
         }
@@ -45,8 +45,8 @@ namespace XmlParserGen {
     }
 
     public class AttributeProperty : Property {
-        public AttributeProperty(string attributeName, Class type)
-            : base(attributeName, type) {
+        public AttributeProperty(string name, string attributeName, Class type)
+            : base(name, attributeName, type) {
         }
         public string AttributeName { get { return ElementName; } }
         public override void Accept(IPropertyVisitor visitor) {
@@ -58,8 +58,8 @@ namespace XmlParserGen {
         readonly string itemElementName;
         readonly bool noListNode;
 
-        public ListProperty(string elementName, Class type, string itemElementName, bool noListNode)
-            : base(elementName, type) {
+        public ListProperty(string name, string elementName, Class type, string itemElementName, bool noListNode)
+            : base(name, elementName, type) {
             this.itemElementName = itemElementName;
             this.noListNode = noListNode;
         }

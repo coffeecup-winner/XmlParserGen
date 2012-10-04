@@ -16,7 +16,7 @@ namespace XmlParserGen {
         static void AddPropertyCore(CodeTypeDeclaration type, CodeTypeReference propertyType, string propertyName) {
             CodeMemberField field = new CodeMemberField {
                 Type = propertyType,
-                Name = CodeDom.GetVariableName(propertyName)
+                Name = CodeDom.GetFieldName(propertyName)
             };
             CodeMemberProperty property = new CodeMemberProperty {
                 Type = propertyType,
@@ -67,6 +67,9 @@ namespace XmlParserGen {
 
         public static string GetVariableName(string name) {
             return char.ToLower(name[0]) + name.Substring(1);
+        }
+        public static string GetFieldName(string name) {
+            return "_" + GetVariableName(name);
         }
         public static CodeTypeDeclaration CreateClass(string name, bool @public = true) {
 			CodeTypeDeclaration newClass = new CodeTypeDeclaration(name) {

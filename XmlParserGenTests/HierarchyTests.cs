@@ -150,5 +150,13 @@ namespace XmlParserGen.Tests {
             Assert.That(root.Books[0].Author.Name.Str, Is.EqualTo("Richard Adams"));
             Assert.That(root.Books[0].Name.GetType(), Is.EqualTo(root.Books[0].Author.Name.GetType()));
         }
+        [Test]
+        public void CustomNamesTest() {
+            string config = @"<root><book name=""bOOk"" typename=""BooK""></book></root>";
+            string xml = @"<root><book /></root>";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.bOOk, Is.Not.Null);
+            Assert.That(root.bOOk.GetType().Name, Is.EqualTo("BooK"));
+        }
     }
 }
