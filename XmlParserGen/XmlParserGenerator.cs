@@ -126,7 +126,7 @@ namespace XmlParserGen {
             this.constructor.Statements.Add(assignment);
         }
         CodeExpression GetSystemTypeInitializer(Class type, CodeExpression value) {
-            if(type == Class.String) return value;
+            if(type == Class.String) return value.Invoke("Trim");
             return CodeDom.TypeRef(type.Name).Invoke("Parse", value);
         }
     }
