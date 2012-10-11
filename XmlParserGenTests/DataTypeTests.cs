@@ -45,5 +45,31 @@ namespace XmlParserGen.Tests {
             dynamic root = Parse(config, xml);
             Assert.That(root.X, Is.EqualTo("ABCDE"));
         }
+        [Test]
+        public void OmittingPropertiesTest() {
+            string config = @"
+<root>
+  <x>
+    <x.attributes>
+      <attr type=""string"" />
+    </x.attributes>
+    <y>
+      <z type=""string"" />
+    </y>
+  </x>
+</root>";
+            string xml = "<root><x /></root>";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.X, Is.Not.Null);
+            Assert.That((object)root.X.Attr, Is.Null);
+            Assert.That((object)root.X.Y, Is.Null);
+        }
+        [Test]
+        public void OmittingListPropertyTest() {
+            string config = @"<root><xs list=""x"" /></root>";
+            string xml = "<root />";
+            dynamic root = Parse(config, xml);
+            Assert.That(root.Xs.Count, Is.EqualTo(0));
+        }
     }
 }

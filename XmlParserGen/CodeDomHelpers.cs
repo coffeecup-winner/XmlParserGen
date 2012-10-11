@@ -60,6 +60,9 @@ namespace XmlParserGen {
         public static CodePropertyReferenceExpression Get(this CodeExpression variable, string name) {
             return new CodePropertyReferenceExpression(variable, name);
         }
+        public static CodeBinaryOperatorExpression IsNotNull(this CodeExpression variable) {
+            return new CodeBinaryOperatorExpression(variable, CodeBinaryOperatorType.IdentityInequality, CodeDom.Primitive(null));
+        }
     }
 
     static class CodeDom {
@@ -157,6 +160,9 @@ namespace XmlParserGen {
             var cycle = new CodeIterationStatement(new CodeSnippetStatement(), moveNext, new CodeSnippetStatement(),
                action(current));
             return Using(iterator, cycle);
+        }
+        public static CodeStatement If(CodeExpression condition, params CodeStatement[] trueStatements) {
+            return new CodeConditionStatement(condition, trueStatements);
         }
     }
 

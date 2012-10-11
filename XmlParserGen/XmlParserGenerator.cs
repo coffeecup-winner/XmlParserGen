@@ -111,19 +111,30 @@ namespace XmlParserGen {
             var createList = CodeDom.AssignField(CodeDom.GetFieldName(property.Name), CodeDom.New(property.TypeName));
             this.constructor.Statements.Add(createList);
             CodeExpression element = CodeDom.VarRef("element");
-            if(!property.NoListNode)
+            CodeVariableDeclarationStatement localVar = null;
+            CodeExpression elements;
+            if(!property.NoListNode) {
                 element = element.Invoke("Element", CodeDom.Primitive(property.ElementName));
-            var enumerableElements = element.Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
+                localVar = CodeDom.DeclareVariable<XElement>(element, property.ElementName);
+            }
+            var enumerableElements = (localVar != null ? CodeDom.VarRef(localVar) : element).Invoke("Elements", CodeDom.Primitive(property.ItemElementName));
             var foreachStatements = CodeDom.ForEach<XElement>(enumerableElements, current => new CodeStatement[] {
                 new CodeExpressionStatement(CodeDom.FieldInvoke(CodeDom.GetFieldName(property.Name), "Add", CodeDom.New(property.Type.Name, current)))
             });
-            this.constructor.Statements.AddRange(foreachStatements);
+            if(localVar != null) {
+                this.constructor.Statements.Add(localVar);
+                this.constructor.Statements.Add(CodeDom.If(CodeDom.VarRef(localVar).IsNotNull(), foreachStatements));
+            } else
+                this.constructor.Statements.AddRange(foreachStatements);
         }
         void AddSimplePropertyInitializer(Property property, bool isAttribute) {
             var newElement = CodeDom.VarRef("element").Invoke(isAttribute ? "Attribute" : "Element", CodeDom.Primitive(property.ElementName));
+            var localVar = isAttribute ? CodeDom.DeclareVariable<XAttribute>(newElement, property.ElementName) : CodeDom.DeclareVariable<XElement>(newElement, property.ElementName);
             var assignment = CodeDom.AssignField(CodeDom.GetFieldName(property.Name),
-                property.Type.IsSystemType ? GetSystemTypeInitializer(property.Type, (CodeExpression)newElement.Get("Value")) : CodeDom.New(property.TypeName, newElement));
-            this.constructor.Statements.Add(assignment);
+                property.Type.IsSystemType ? GetSystemTypeInitializer(property.Type, (CodeExpression)CodeDom.VarRef(localVar).Get("Value")) : CodeDom.New(property.TypeName, CodeDom.VarRef(localVar)));
+            var condition = CodeDom.If(CodeDom.VarRef(localVar).IsNotNull(), assignment);
+            this.constructor.Statements.Add(localVar);
+            this.constructor.Statements.Add(condition);
         }
         CodeExpression GetSystemTypeInitializer(Class type, CodeExpression value) {
             if(type == Class.String) return value.Invoke("Trim");
